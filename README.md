@@ -1,2 +1,2 @@
-#python-telegram-bot
-requests vpn-bot
+python-telegram-bot
+requests
