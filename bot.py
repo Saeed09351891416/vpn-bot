@@ -2,21 +2,22 @@ import requests
 import os
 import time
 
-# توکن ربات تلگرام از متغیر محیطی
 TOKEN = os.getenv("BOT_TOKEN")
 LAST_UPDATE = 0
 
-def send_message(chat_id, text):
-    """ارسال پیام به کاربر"""
+def send_message(chat_id, text, buttons=None):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-    requests.post(url, json={"chat_id": chat_id, "text": text})
+    payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
+    
+    if buttons:
+        payload["reply_markup"] = {"inline_keyboard": buttons}
+    
+    requests.post(url, json=payload)
 
 def bot_loop():
-    """حلقه اصلی ربات"""
     global LAST_UPDATE
     while True:
         try:
-            # گرفتن آپدیت‌ها از تلگرام
             url = f"https://api.telegram.org/bot{TOKEN}/getUpdates?offset={LAST_UPDATE + 1}"
             response = requests.get(url).json()
             
@@ -28,14 +29,13 @@ def bot_loop():
                     chat_id = message["chat"]["id"]
                     text = message.get("text", "")
                     
-                    # پاسخ به دستور /start
                     if text == "/start":
-                        send_message(chat_id, "سلام! ربات فعال شد ✅")
+                        buttons = [[{"text": "خرید VPN", "callback_data": "buy"}],
+                                   [{"text": "وضعیت سرور", "callback_data": "status"}]]
+                        send_message(chat_id, "ربات VPN روشنه ✅\nیک گزینه انتخاب کن:", buttons)
                         
         except Exception as e:
             print("خطا:", e)
-        
-        # کمی صبر بین حلقه‌ها
         time.sleep(1)
 
 if __name__ == "__main__":
